@@ -20,11 +20,15 @@ var (
 func main() {
 	flag.Parse()
 
-	go func() {
+	helloD := client.NewConsulDiscovery(*basePath, "HelloSvc", []string{*consulAddr}, nil)
+	helloClient := client.NewXClient("HelloSvc", client.Failtry, client.RandomSelect, helloD, client.DefaultOption)
+	defer helloClient.Close()
 
-		helloD := client.NewConsulDiscovery(*basePath, "HelloSvc", []string{*consulAddr}, nil)
-		helloClient := client.NewXClient("HelloSvc", client.Failtry, client.RandomSelect, helloD, client.DefaultOption)
-		defer helloClient.Close()
+	addD := client.NewConsulDiscovery(*basePath, "AddSvc", []string{*consulAddr}, nil)
+	addClient := client.NewXClient("AddSvc", client.Failtry, client.RandomSelect, addD, client.DefaultOption)
+	defer addClient.Close()
+
+	go func() {
 
 		for {
 			args := &handler.HelloArgs{
@@ -45,10 +49,6 @@ func main() {
 
 	go func() {
 		for {
-			addD := client.NewConsulDiscovery(*basePath, "AddSvc", []string{*consulAddr}, nil)
-			addClient := client.NewXClient("AddSvc", client.Failtry, client.RandomSelect, addD, client.DefaultOption)
-			defer addClient.Close()
-
 			args := &handler.AddArgs{
 				Left:  1,
 				Right: 2,
